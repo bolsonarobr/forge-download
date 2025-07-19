@@ -17,10 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tiago.forgeapp.ui.theme.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun MainScreen() {
-    var selectedContent by remember { mutableStateOf<String?>(null) }
+    var selectedContent by rememberSaveable { mutableStateOf<String?>(null) }
 
     Row(modifier = Modifier.fillMaxSize().background(BlackBackground)) {
         // Painel Esquerdo
@@ -29,6 +31,7 @@ fun MainScreen() {
                 .fillMaxHeight()
                 .width(120.dp)
                 .background(DarkGreyPanel)
+                .statusBarsPadding()
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -44,9 +47,10 @@ fun MainScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top
         ) {
             when (selectedContent) {
                 "BOT" -> BotContent()
@@ -55,15 +59,20 @@ fun MainScreen() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BotContent() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        TouchButton(text = "Ligar", color = GreenButton, onClick = { /*TODO*/ })
-        TouchButton(text = "Desligar", color = RedButton, onClick = { /*TODO*/ })
-        TouchButton(text = "Ajustar Janelas", color = BlueButton, onClick = { /*TODO*/ })
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            TouchButton(text = "Ligar", color = GreenButton, onClick = { /*TODO*/ })
+            TouchButton(text = "Desligar", color = RedButton, onClick = { /*TODO*/ })
+        }
+        FlowRow {
+            TouchButton(text = "Ajustar Janelas", color = BlueButton, onClick = { /*TODO*/ })
+        }
     }
 }
 
