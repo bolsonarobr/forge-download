@@ -19,10 +19,28 @@ import androidx.compose.ui.unit.sp
 import com.tiago.forgeapp.ui.theme.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
+    val networkService = remember { NetworkService(context) }
+    val serverUrl by networkService.serverUrl.collectAsState()
+    
     var selectedContent by rememberSaveable { mutableStateOf<String?>(null) }
+    val isServerAvailable = serverUrl != null
+
+    LaunchedEffect(Unit) {
+        networkService.startDiscovery()
+    }
 
     Row(modifier = Modifier.fillMaxSize().background(BlackBackground)) {
         // Painel Esquerdo
@@ -39,7 +57,8 @@ fun MainScreen() {
             TouchButton(
                 text = "BOT",
                 color = BlueButton,
-                onClick = { selectedContent = "BOT" }
+                onClick = { selectedContent = "BOT" },
+                enabled = isServerAvailable
             )
         }
 
@@ -52,8 +71,10 @@ fun MainScreen() {
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
-            when (selectedContent) {
-                "BOT" -> BotContent()
+            if (isServerAvailable) {
+                when (selectedContent) {
+                    "BOT" -> BotContent(networkService)
+                }
             }
         }
     }
@@ -61,17 +82,31 @@ fun MainScreen() {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BotContent() {
+fun BotContent(networkService: NetworkService) {
+    val scope = rememberCoroutineScope()
+
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TouchButton(text = "Ligar", color = GreenButton, onClick = { /*TODO*/ })
-            TouchButton(text = "Desligar", color = RedButton, onClick = { /*TODO*/ })
+            TouchButton(
+                text = "Ligar", 
+                color = GreenButton, 
+                onClick = { scope.launch { networkService.sendCommand("ligarBOT") } }
+            )
+            TouchButton(
+                text = "Desligar", 
+                color = RedButton, 
+                onClick = { scope.launch { networkService.sendCommand("desligarBOT") } }
+            )
         }
         FlowRow {
-            TouchButton(text = "Ajustar Janelas", color = BlueButton, onClick = { /*TODO*/ })
+            TouchButton(
+                text = "Ajustar Janelas", 
+                color = BlueButton, 
+                onClick = { scope.launch { networkService.sendCommand("ajustarjanelas") } }
+            )
         }
     }
 }
@@ -81,7 +116,8 @@ fun TouchButton(
     text: String,
     color: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -102,13 +138,15 @@ fun TouchButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
-            ),
+                onClick = onClick,
+                enabled = enabled
+            )
+            .then(if (!enabled) Modifier.background(Color.Black.copy(alpha = 0.6f)) else Modifier),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = Color.White,
+            color = if (enabled) Color.White else Color.Gray,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp
         )
