@@ -70,7 +70,8 @@ def index():
 @app.route('/comando/<string:nome_comando>')
 def executar_comando(nome_comando):
     print(Fore.CYAN + f"Comando AHK recebido: {nome_comando}")
-    caminho_script_ahk = os.path.join('FORGE', 'ahk', 'script com argumentos.ahk')
+    diretorio_base = os.path.dirname(os.path.abspath(__file__))
+    caminho_script_ahk = os.path.join(diretorio_base, 'ahk', 'script com argumentos.ahk')
     subprocess.Popen([caminho_script_ahk, nome_comando], shell=True)
     return "OK", 200
 
