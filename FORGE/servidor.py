@@ -1,15 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 import logging
 import subprocess
 import mss
 import time
-from colorama import init, Fore
-import os
 import socket
 import threading
 from zeroconf import ServiceInfo, Zeroconf
-
-init(autoreset=True)
+from waitress import serve
+import os
 
 app = Flask(__name__)
 
@@ -42,26 +40,22 @@ def register_service(zeroconf):
         server=f"{socket.gethostname()}.local."
     )
     
-    print(Fore.CYAN + f"Anunciando serviço '{service_name}' na rede: {ip_address}:{port}")
     zeroconf.register_service(info)
 
-def verificar_tela():
-    print(Fore.CYAN + "Verificando configurações de tela...")
-    subprocess.run(
-        ['displayswitch.exe', '/internal'], 
-        shell=True, 
-        stdout=subprocess.DEVNULL, 
-        stderr=subprocess.DEVNULL
-    )
-    time.sleep(2)
-    with mss.mss() as sct:
-        monitor = sct.monitors[1]
-        largura = monitor["width"]
-        altura = monitor["height"]
-        if largura == 2560 and altura == 1440:
-            print(Fore.GREEN + f"-> Resolução correta: {largura}x{altura}")
-        else:
-            print(Fore.YELLOW + f"-> ALERTA: Resolução incorreta. Esperado: 2560x1440, Atual: {largura}x{altura}")
+# def verificar_tela():
+#     subprocess.run(
+#         ['displayswitch.exe', '/internal'], 
+#         shell=True, 
+#         stdout=subprocess.DEVNULL, 
+#         stderr=subprocess.DEVNULL
+#     )
+#     time.sleep(2)
+#     with mss.mss() as sct:
+#         monitor = sct.monitors[1]
+#         largura = monitor["width"]
+#         altura = monitor["height"]
+#         if not (largura == 2560 and altura == 1440):
+#             pass
 
 @app.route('/')
 def index():
@@ -69,23 +63,19 @@ def index():
 
 @app.route('/comando/<string:nome_comando>')
 def executar_comando(nome_comando):
-    print(Fore.CYAN + f"Comando AHK recebido: {nome_comando}")
     diretorio_base = os.path.dirname(os.path.abspath(__file__))
     caminho_script_ahk = os.path.join(diretorio_base, 'ahk', 'script com argumentos.ahk')
     subprocess.Popen([caminho_script_ahk, nome_comando], shell=True)
     return "OK", 200
 
 if __name__ == '__main__':
-    verificar_tela()
+    # verificar_tela()
 
     zeroconf = Zeroconf()
     register_thread = threading.Thread(target=register_service, args=(zeroconf,), daemon=True)
     register_thread.start()
     
-    print(Fore.GREEN + "Iniciando servidor Forge na porta 8080...")
-    
     try:
-        app.run(host='0.0.0.0', port=8080)
+        serve(app, host='0.0.0.0', port=8080, _quiet=True)
     finally:
-        print(Fore.YELLOW + "Desligando o anúncio de rede...")
         zeroconf.close()
