@@ -87,9 +87,17 @@ class ForgeApp:
         self.root = tk.Tk()
         self.root.title("Forge Server")
         self.root.geometry("200x80")
-        
-        label = tk.Label(self.root, text="ON", font=("Arial", 24, "bold"), fg="green")
-        label.pack(pady=20)
+        self.root.resizable(False, False)
+        self.root.configure(bg="#2E2E2E")
+
+        label = tk.Label(
+            self.root,
+            text="ON",
+            font=("Consolas", 24, "bold"),
+            fg="#00FF00",
+            bg="#2E2E2E"
+        )
+        label.pack(pady=15, fill="both", expand=True)
         
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
