@@ -6,12 +6,14 @@ import threading
 from zeroconf import ServiceInfo, Zeroconf
 import os
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 import sys
+import requests
 
 # --- Constantes ---
 SERVER_PORT = 8080
 LOCK_PORT = 19988
+URL_VALIDACAO = "https://script.google.com/macros/s/AKfycbwDzLihI6zg9M3t17Sdg0YcZYLhXAeHPEEuBrlTzpGMtCb73JJTnZkBQwgCQ2JA_sH4/exec"
 
 # --- Configuração do Servidor Flask ---
 app = Flask(__name__)
@@ -51,6 +53,40 @@ class ForgeApp:
         self.lock_socket = None
         self.zeroconf = Zeroconf()
         self.server_thread = None
+
+    def _validar_licenca_online(self, chave):
+        try:
+            resposta = requests.post(URL_VALIDACAO, data=chave.strip(), timeout=15)
+            return resposta.status_code == 200 and resposta.text == "VALIDA"
+        except requests.RequestException:
+            return False
+
+    def _gerenciar_licenca(self):
+        caminho_licenca = 'licenca.txt'
+        
+        if os.path.exists(caminho_licenca):
+            with open(caminho_licenca, 'r') as f:
+                chave_salva = f.read().strip()
+            if chave_salva and self._validar_licenca_online(chave_salva):
+                return True
+            else:
+                os.remove(caminho_licenca)
+
+        root_temp = tk.Tk()
+        root_temp.withdraw()
+        while True:
+            chave_inserida = simpledialog.askstring("Licença", "Por favor, insira sua chave de licença:", parent=root_temp)
+            if not chave_inserida:
+                root_temp.destroy()
+                return False
+            
+            if self._validar_licenca_online(chave_inserida):
+                with open(caminho_licenca, 'w') as f:
+                    f.write(chave_inserida)
+                root_temp.destroy()
+                return True
+            else:
+                messagebox.showerror("Erro", "Chave de licença inválida ou falha na conexão.", parent=root_temp)
 
     def _acquire_lock(self):
         self.lock_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -102,6 +138,9 @@ class ForgeApp:
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
     def run(self):
+        if not self._gerenciar_licenca():
+            sys.exit()
+
         if not self._acquire_lock():
             root = tk.Tk()
             root.withdraw()
