@@ -121,7 +121,7 @@ class ForgeApp:
 
     def _create_gui(self):
         self.root = tk.Tk()
-        self.root.title("Forge Server")
+        self.root.title("FORGE")
         self.root.geometry("200x80")
         self.root.resizable(False, False)
         self.root.configure(bg="#2E2E2E")
