@@ -9,6 +9,8 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 import sys
 import requests
+import winreg
+import base64
 
 # --- Constantes ---
 SERVER_PORT = 8080
@@ -29,6 +31,33 @@ def get_local_ip():
     finally:
         s.close()
     return IP
+
+def verificar_e_instalar_ahk():
+    try:
+        winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\AutoHotkey")
+        return True
+    except FileNotFoundError:
+        root = tk.Tk()
+        root.withdraw()
+        
+        install_script = """
+        $tempPath = Join-Path $env:TEMP 'ahk-install.exe';
+        Start-BitsTransfer -Source 'https://www.autohotkey.com/download/ahk-install.exe' -Destination $tempPath;
+        Start-Process $tempPath -ArgumentList '/S' -Wait;
+        Remove-Item $tempPath -ErrorAction SilentlyContinue;
+        """
+
+        encoded_script = base64.b64encode(install_script.encode('utf_16_le')).decode()
+        
+        elevating_command = f'powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \'-NoProfile -EncodedCommand {encoded_script}\'"'
+        
+        try:
+            subprocess.run(elevating_command, shell=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            messagebox.showinfo("Instalação Concluída", "AutoHotkey foi instalado com sucesso. Por favor, reinicie a aplicação.")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            messagebox.showerror("Erro na Instalação", "Não foi possível instalar o AutoHotkey. Tente executar o Forge como administrador.")
+        finally:
+            sys.exit()
 
 # --- Rotas ---
 @app.route('/')
@@ -138,6 +167,8 @@ class ForgeApp:
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
     def run(self):
+        verificar_e_instalar_ahk()
+        
         if not self._gerenciar_licenca():
             sys.exit()
 
