@@ -51,7 +51,13 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
 - `servidor.py` - Servidor principal com GUI Tkinter
 - `contas.json` - Dados das contas (nome, caminho)
 - `ahk/` - Scripts AutoHotkey
-- Rotas implementadas:
+- **Funcionalidades implementadas:**
+  - **Validação de Licença:** Verificação de chave de licença online na inicialização.
+  - **Verificação de Ambiente:** Checagem e instalação automática do AutoHotkey.
+  - **Ajuste de Resolução:** Detecção e sugestão de ajuste para a resolução de tela recomendada.
+  - **Instância Única:** Garante que apenas uma instância do servidor seja executada.
+  - **Validação de Atalho:** Confirma a existência do caminho do atalho (.lnk) ao adicionar conta.
+- Rotas da API:
   - `GET /contas` - Listar contas
   - `POST /contas` - Adicionar conta
   - `POST /executar_conta` - Executar atalho
@@ -69,8 +75,7 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
   - Adição, renomeação e exclusão de contas
 
 ### PRÓXIMAS FUNCIONALIDADES PENDENTES
-1. Validação de atalhos (.lnk)
-2. Interface de configuração do servidor
+1. Interface de configuração do servidor
 
 ### ARQUIVOS CRÍTICOS PARA MODIFICAÇÃO
 - `FORGE_APP/FORGE/servidor.py` - Lógica do servidor
