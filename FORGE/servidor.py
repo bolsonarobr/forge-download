@@ -22,7 +22,12 @@ import json
 SERVER_PORT = 8080
 LOCK_PORT = 19988
 URL_VALIDACAO = "https://script.google.com/macros/s/AKfycbwDzLihI6zg9M3t17Sdg0YcZYLhXAeHPEEuBrlTzpGMtCb73JJTnZkBQwgCQ2JA_sH4/exec"
-CAMINHO_CONTAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'contas.json')
+
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+else:
+    application_path = os.path.dirname(os.path.abspath(__file__))
+CAMINHO_CONTAS = os.path.join(application_path, 'contas.json')
 
 # CONFIGURAÇÃO DO SERVIDOR WEB
 app = Flask(__name__)
