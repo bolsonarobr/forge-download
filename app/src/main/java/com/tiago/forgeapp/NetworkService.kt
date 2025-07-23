@@ -4,13 +4,28 @@ import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class Account(val nome: String, val caminho: String? = null)
 
 class NetworkService(context: Context) {
-    private val client = HttpClient(CIO)
+    private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+            })
+        }
+    }
     private val nsdManager = context.getSystemService(Context.NSD_SERVICE) as NsdManager
 
     private val _serverUrl = MutableStateFlow<String?>(null)
@@ -62,6 +77,43 @@ class NetworkService(context: Context) {
         serverUrl.value?.let { url ->
             try {
                 client.get("$url/comando/$command")
+            } catch (e: Exception) {
+                // Falha silenciosamente
+            }
+        }
+    }
+
+    suspend fun getAccounts(): List<Account> {
+        return serverUrl.value?.let { url ->
+            try {
+                client.get("$url/contas").body()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } ?: emptyList()
+    }
+
+    suspend fun addAccount(accountName: String): Boolean {
+        return serverUrl.value?.let { url ->
+            try {
+                val response = client.post("$url/contas") {
+                    contentType(ContentType.Application.Json)
+                    setBody(mapOf("nome" to accountName))
+                }
+                response.status == HttpStatusCode.Created
+            } catch (e: Exception) {
+                false
+            }
+        } ?: false
+    }
+
+    suspend fun executeAccount(accountName: String) {
+        serverUrl.value?.let { url ->
+            try {
+                client.post("$url/executar_conta") {
+                    contentType(ContentType.Application.Json)
+                    setBody(mapOf("nome" to accountName))
+                }
             } catch (e: Exception) {
                 // Falha silenciosamente
             }

@@ -28,6 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun MainScreen() {
@@ -60,6 +64,12 @@ fun MainScreen() {
                 onClick = { selectedContent = "BOT" },
                 enabled = isServerAvailable
             )
+            TouchButton(
+                text = "CONTAS",
+                color = OrangeButton,
+                onClick = { selectedContent = "CONTAS" },
+                enabled = isServerAvailable
+            )
         }
 
         // Painel Direito
@@ -74,11 +84,87 @@ fun MainScreen() {
             if (isServerAvailable) {
                 when (selectedContent) {
                     "BOT" -> BotContent(networkService)
+                    "CONTAS" -> AccountsContent(networkService)
                 }
             }
         }
     }
 }
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun AccountsContent(networkService: NetworkService) {
+    val scope = rememberCoroutineScope()
+    var accounts by remember { mutableStateOf<List<Account>>(emptyList()) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var newAccountName by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        accounts = networkService.getAccounts()
+    }
+
+    if (showAddDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("Adicionar Nova Conta") },
+            text = {
+                OutlinedTextField(
+                    value = newAccountName,
+                    onValueChange = { newAccountName = it },
+                    label = { Text("Nome da Conta") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newAccountName.isNotBlank()) {
+                            scope.launch {
+                                if (networkService.addAccount(newAccountName)) {
+                                    accounts = networkService.getAccounts()
+                                }
+                                showAddDialog = false
+                                newAccountName = ""
+                            }
+                        }
+                    }
+                ) {
+                    Text("Adicionar")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showAddDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            accounts.forEach { account ->
+                TouchButton(
+                    text = account.nome,
+                    color = PurpleButton,
+                    onClick = {
+                        scope.launch {
+                            networkService.executeAccount(account.nome)
+                        }
+                    }
+                )
+            }
+            TouchButton(
+                text = "Adicionar",
+                color = GreenButton,
+                onClick = { showAddDialog = true }
+            )
+        }
+    }
+}
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

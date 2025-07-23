@@ -1,5 +1,5 @@
 # PACOTES E FERRAMENTAS USADAS
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import subprocess
 import socket
 import threading
@@ -16,16 +16,33 @@ import mss
 import win32api
 import win32con
 import pywintypes
+import json
 
 # CONFIGURAÇÕES FIXAS
 SERVER_PORT = 8080
 LOCK_PORT = 19988
 URL_VALIDACAO = "https://script.google.com/macros/s/AKfycbwDzLihI6zg9M3t17Sdg0YcZYLhXAeHPEEuBrlTzpGMtCb73JJTnZkBQwgCQ2JA_sH4/exec"
+CAMINHO_CONTAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'contas.json')
 
 # CONFIGURAÇÃO DO SERVIDOR WEB
 app = Flask(__name__)
 
 # FUNÇÕES DE APOIO
+def _carregar_contas():
+    if not os.path.exists(CAMINHO_CONTAS):
+        with open(CAMINHO_CONTAS, 'w') as f:
+            json.dump([], f)
+        return []
+    try:
+        with open(CAMINHO_CONTAS, 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return []
+
+def _salvar_contas(contas):
+    with open(CAMINHO_CONTAS, 'w') as f:
+        json.dump(contas, f, indent=4)
+
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -136,6 +153,65 @@ def verificar_e_instalar_ahk():
 @app.route('/')
 def index():
     return "Servidor Forge em execução"
+
+@app.route('/contas', methods=['GET'])
+def get_contas():
+    contas = _carregar_contas()
+    return jsonify(contas)
+
+@app.route('/contas', methods=['POST'])
+def adicionar_conta():
+    dados = request.get_json(force=True)
+    if not dados:
+        return jsonify({"sucesso": False, "erro": "Payload JSON inválido"}), 400
+        
+    nome_conta = dados.get('nome')
+
+    if not nome_conta:
+        return jsonify({"sucesso": False, "erro": "Nome não fornecido"}), 400
+
+    root_temp = tk.Tk()
+    root_temp.withdraw()
+    caminho_atalho = simpledialog.askstring(
+        "Adicionar Conta",
+        f"Cole o caminho do atalho (.lnk) para a conta '{nome_conta}':",
+        parent=root_temp
+    )
+    root_temp.destroy()
+
+    if not caminho_atalho:
+        return jsonify({"sucesso": False, "erro": "Nenhum caminho foi inserido"}), 400
+
+    caminho_limpo = os.path.normpath(caminho_atalho.strip().strip('"'))
+
+    if not os.path.exists(caminho_limpo):
+        return jsonify({"sucesso": False, "erro": f"Caminho não encontrado: {caminho_limpo}"}), 400
+
+    contas = _carregar_contas()
+    contas.append({"nome": nome_conta, "caminho": caminho_limpo})
+    _salvar_contas(contas)
+
+    return jsonify({"sucesso": True}), 201
+
+@app.route('/executar_conta', methods=['POST'])
+def executar_conta():
+    dados = request.get_json()
+    nome_conta = dados.get('nome')
+
+    if not nome_conta:
+        return jsonify({"sucesso": False, "erro": "Nome não fornecido"}), 400
+
+    contas = _carregar_contas()
+    conta_encontrada = next((c for c in contas if c['nome'] == nome_conta), None)
+
+    if not conta_encontrada:
+        return jsonify({"sucesso": False, "erro": "Conta não encontrada"}), 404
+
+    try:
+        os.startfile(conta_encontrada['caminho'])
+        return jsonify({"sucesso": True}), 200
+    except Exception as e:
+        return jsonify({"sucesso": False, "erro": str(e)}), 500
 
 @app.route('/comando/<string:nome_comando>')
 def executar_comando(nome_comando):
@@ -249,6 +325,7 @@ class ForgeApp:
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
     def run(self):
+        _carregar_contas()
         verificar_e_instalar_ahk()
         verificar_e_ajustar_resolucao()
         
