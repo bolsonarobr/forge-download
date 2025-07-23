@@ -119,4 +119,32 @@ class NetworkService(context: Context) {
             }
         }
     }
+
+    suspend fun renameAccount(oldName: String, newName: String): Boolean {
+        return serverUrl.value?.let { url ->
+            try {
+                val response = client.post("$url/renomear_conta") {
+                    contentType(ContentType.Application.Json)
+                    setBody(mapOf("nome_antigo" to oldName, "nome_novo" to newName))
+                }
+                response.status == HttpStatusCode.OK
+            } catch (e: Exception) {
+                false
+            }
+        } ?: false
+    }
+
+    suspend fun deleteAccount(accountName: String): Boolean {
+        return serverUrl.value?.let { url ->
+            try {
+                val response = client.post("$url/excluir_conta") {
+                    contentType(ContentType.Application.Json)
+                    setBody(mapOf("nome" to accountName))
+                }
+                response.status == HttpStatusCode.OK
+            } catch (e: Exception) {
+                false
+            }
+        } ?: false
+    }
 } 

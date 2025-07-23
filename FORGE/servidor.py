@@ -213,6 +213,46 @@ def executar_conta():
     except Exception as e:
         return jsonify({"sucesso": False, "erro": str(e)}), 500
 
+@app.route('/renomear_conta', methods=['POST'])
+def renomear_conta():
+    dados = request.get_json()
+    nome_antigo = dados.get('nome_antigo')
+    nome_novo = dados.get('nome_novo')
+
+    if not nome_antigo or not nome_novo:
+        return jsonify({"sucesso": False, "erro": "Nomes não fornecidos"}), 400
+
+    contas = _carregar_contas()
+    conta_encontrada = False
+    for conta in contas:
+        if conta['nome'] == nome_antigo:
+            conta['nome'] = nome_novo
+            conta_encontrada = True
+            break
+    
+    if not conta_encontrada:
+        return jsonify({"sucesso": False, "erro": "Conta não encontrada"}), 404
+
+    _salvar_contas(contas)
+    return jsonify({"sucesso": True}), 200
+
+@app.route('/excluir_conta', methods=['POST'])
+def excluir_conta():
+    dados = request.get_json()
+    nome_conta = dados.get('nome')
+
+    if not nome_conta:
+        return jsonify({"sucesso": False, "erro": "Nome não fornecido"}), 400
+
+    contas = _carregar_contas()
+    contas_filtradas = [c for c in contas if c['nome'] != nome_conta]
+
+    if len(contas_filtradas) == len(contas):
+        return jsonify({"sucesso": False, "erro": "Conta não encontrada"}), 404
+
+    _salvar_contas(contas_filtradas)
+    return jsonify({"sucesso": True}), 200
+
 @app.route('/comando/<string:nome_comando>')
 def executar_comando(nome_comando):
     if not verificar_associacao_ahk():

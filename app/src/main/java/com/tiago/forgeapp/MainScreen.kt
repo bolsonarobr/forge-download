@@ -32,6 +32,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 @Composable
 fun MainScreen() {
@@ -98,9 +100,19 @@ fun AccountsContent(networkService: NetworkService) {
     var accounts by remember { mutableStateOf<List<Account>>(emptyList()) }
     var showAddDialog by remember { mutableStateOf(false) }
     var newAccountName by remember { mutableStateOf("") }
+    var selectedAccount by remember { mutableStateOf<Account?>(null) }
+    var showOptionsDialog by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var renameAccountName by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         accounts = networkService.getAccounts()
+    }
+
+    fun refreshAccounts() {
+        scope.launch {
+            accounts = networkService.getAccounts()
+        }
     }
 
     if (showAddDialog) {
@@ -121,7 +133,7 @@ fun AccountsContent(networkService: NetworkService) {
                         if (newAccountName.isNotBlank()) {
                             scope.launch {
                                 if (networkService.addAccount(newAccountName)) {
-                                    accounts = networkService.getAccounts()
+                                    refreshAccounts()
                                 }
                                 showAddDialog = false
                                 newAccountName = ""
@@ -140,6 +152,59 @@ fun AccountsContent(networkService: NetworkService) {
         )
     }
 
+    if (showOptionsDialog && selectedAccount != null) {
+        AlertDialog(
+            onDismissRequest = { showOptionsDialog = false },
+            title = { Text("Opções para ${selectedAccount!!.nome}") },
+            text = { Text("Deseja renomear ou excluir esta conta?") },
+            confirmButton = {
+                Button(onClick = {
+                    showOptionsDialog = false
+                    renameAccountName = selectedAccount!!.nome
+                    showRenameDialog = true
+                }) { Text("Renomear") }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    scope.launch {
+                        if (networkService.deleteAccount(selectedAccount!!.nome)) {
+                            refreshAccounts()
+                        }
+                        showOptionsDialog = false
+                    }
+                }) { Text("Excluir") }
+            }
+        )
+    }
+
+    if (showRenameDialog) {
+        AlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text("Renomear Conta") },
+            text = {
+                OutlinedTextField(
+                    value = renameAccountName,
+                    onValueChange = { renameAccountName = it },
+                    label = { Text("Novo nome da conta") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    scope.launch {
+                        if (networkService.renameAccount(selectedAccount!!.nome, renameAccountName)) {
+                            refreshAccounts()
+                        }
+                        showRenameDialog = false
+                    }
+                }) { Text("Confirmar") }
+            },
+            dismissButton = {
+                Button(onClick = { showRenameDialog = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -153,6 +218,10 @@ fun AccountsContent(networkService: NetworkService) {
                         scope.launch {
                             networkService.executeAccount(account.nome)
                         }
+                    },
+                    onLongClick = {
+                        selectedAccount = account
+                        showOptionsDialog = true
                     }
                 )
             }
@@ -203,7 +272,8 @@ fun TouchButton(
     color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    onLongClick: (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -221,12 +291,13 @@ fun TouchButton(
                     colors = listOf(topColor, bottomColor)
                 )
             )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-                enabled = enabled
-            )
+            .clickable(enabled = false) {}
+            .pointerInput(enabled, onLongClick) {
+                detectTapGestures(
+                    onTap = { if (enabled) onClick() },
+                    onLongPress = { if (enabled) onLongClick?.invoke() }
+                )
+            }
             .then(if (!enabled) Modifier.background(Color.Black.copy(alpha = 0.6f)) else Modifier),
         contentAlignment = Alignment.Center
     ) {
