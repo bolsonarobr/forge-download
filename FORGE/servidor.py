@@ -1,4 +1,4 @@
-# --- Importações ---
+# PACOTES E FERRAMENTAS USADAS
 from flask import Flask, request
 import subprocess
 import socket
@@ -17,15 +17,15 @@ import win32api
 import win32con
 import pywintypes
 
-# --- Constantes ---
+# CONFIGURAÇÕES FIXAS
 SERVER_PORT = 8080
 LOCK_PORT = 19988
 URL_VALIDACAO = "https://script.google.com/macros/s/AKfycbwDzLihI6zg9M3t17Sdg0YcZYLhXAeHPEEuBrlTzpGMtCb73JJTnZkBQwgCQ2JA_sH4/exec"
 
-# --- Configuração do Servidor Flask ---
+# CONFIGURAÇÃO DO SERVIDOR WEB
 app = Flask(__name__)
 
-# --- Funções Auxiliares ---
+# FUNÇÕES DE APOIO
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -38,7 +38,7 @@ def get_local_ip():
     return IP
 
 def verificar_associacao_ahk():
-    """Verifica silenciosamente se o AHK está instalado e associado."""
+    # GARANTE QUE O AUTOHOTKEY ESTÁ PRONTO PARA USO.
     try:
         winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\AutoHotkey")
         with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, r".ahk") as key:
@@ -132,7 +132,7 @@ def verificar_e_instalar_ahk():
     finally:
         sys.exit()
 
-# --- Rotas ---
+# LINKS E COMANDOS DO SERVIDOR
 @app.route('/')
 def index():
     return "Servidor Forge em execução"
@@ -157,7 +157,7 @@ def executar_comando(nome_comando):
     subprocess.Popen([caminho_script_ahk, nome_comando], shell=True)
     return "OK", 200
 
-# --- Classe Principal da Aplicação ---
+# CÓDIGO PRINCIPAL DO APLICATIVO
 class ForgeApp:
     def __init__(self):
         self.root = None
@@ -270,7 +270,7 @@ class ForgeApp:
         self._create_gui()
         self.root.mainloop()
 
-# --- Ponto de Entrada ---
+# INÍCIO DO PROGRAMA
 if __name__ == '__main__':
     app_instance = ForgeApp()
     app_instance.run()
