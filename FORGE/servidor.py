@@ -11,6 +11,11 @@ import sys
 import requests
 import winreg
 import base64
+import time
+import mss
+import win32api
+import win32con
+import pywintypes
 
 # --- Constantes ---
 SERVER_PORT = 8080
@@ -31,6 +36,64 @@ def get_local_ip():
     finally:
         s.close()
     return IP
+
+def verificar_e_ajustar_resolucao():
+    try:
+        with mss.mss() as sct:
+            if len(sct.monitors) < 2:
+                root = tk.Tk()
+                root.withdraw()
+                messagebox.showerror("Erro de Monitor", "Não foi possível detectar um monitor principal.")
+                sys.exit()
+            monitor = sct.monitors[1]
+            
+            if monitor["width"] == 2560 and monitor["height"] == 1440:
+                return True
+
+        root = tk.Tk()
+        root.withdraw()
+        
+        should_adjust = messagebox.askyesno(
+            "Resolução Incorreta",
+            f"Sua resolução é {monitor['width']}x{monitor['height']}. "
+            "A resolução recomendada é 2560x1440.Deseja ajustar automaticamente?"
+        )
+
+        if not should_adjust:
+            messagebox.showerror("Erro", "A aplicação será encerrada devido à resolução incompatível.")
+            sys.exit()
+
+        try:
+            subprocess.run(['displayswitch.exe', '/internal'], shell=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            time.sleep(2)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+             messagebox.showwarning("Aviso", "Não foi possível forçar a exibição no monitor principal.")
+
+        try:
+            devmode = win32api.EnumDisplaySettings(None, 0)
+            devmode.PelsWidth = 2560
+            devmode.PelsHeight = 1440
+            devmode.Fields = win32con.DM_PELSWIDTH | win32con.DM_PELSHEIGHT
+            win32api.ChangeDisplaySettings(devmode, 0)
+            time.sleep(2)
+        except pywintypes.error:
+             messagebox.showerror("Erro de ajuste", "Falha ao tentar alterar a resolução. Verifique os drivers de vídeo.")
+             sys.exit()
+
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            if monitor["width"] != 2560 or monitor["height"] != 1440:
+                messagebox.showerror("Erro", f"Não foi possível ajustar a resolução. Resolução atual: {monitor['width']}x{monitor['height']}.")
+                sys.exit()
+        
+        messagebox.showinfo("Resolução Ajustada", "A resolução foi ajustada para 2560x1440 com sucesso.")
+        return True
+
+    except Exception as e:
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("Erro de Resolução", f"Ocorreu um erro inesperado: {e}")
+        sys.exit()
 
 def verificar_e_instalar_ahk():
     try:
@@ -168,6 +231,7 @@ class ForgeApp:
 
     def run(self):
         verificar_e_instalar_ahk()
+        verificar_e_ajustar_resolucao()
         
         if not self._gerenciar_licenca():
             sys.exit()
