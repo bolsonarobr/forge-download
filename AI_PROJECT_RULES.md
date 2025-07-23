@@ -55,6 +55,8 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
   - `GET /contas` - Listar contas
   - `POST /contas` - Adicionar conta
   - `POST /executar_conta` - Executar atalho
+  - `POST /renomear_conta` - Renomear conta
+  - `POST /excluir_conta` - Excluir conta
   - `GET /comando/<nome>` - Comandos gerais
 
 #### FRONTEND (FORGE_APP/app/)
@@ -64,13 +66,11 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
 - Funcionalidades implementadas:
   - Descoberta automática do servidor
   - Painel de contas com botões dinâmicos
-  - Adição de novas contas via diálogo
+  - Adição, renomeação e exclusão de contas
 
 ### PRÓXIMAS FUNCIONALIDADES PENDENTES
-1. Renomear contas existentes
-2. Excluir contas do sistema
-3. Validação de atalhos (.lnk)
-4. Interface de configuração do servidor
+1. Validação de atalhos (.lnk)
+2. Interface de configuração do servidor
 
 ### ARQUIVOS CRÍTICOS PARA MODIFICAÇÃO
 - `FORGE_APP/FORGE/servidor.py` - Lógica do servidor
