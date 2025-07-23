@@ -37,6 +37,17 @@ def get_local_ip():
         s.close()
     return IP
 
+def verificar_associacao_ahk():
+    """Verifica silenciosamente se o AHK está instalado e associado."""
+    try:
+        winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\AutoHotkey")
+        with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, r".ahk") as key:
+            if "AutoHotkey" not in winreg.QueryValue(key, None):
+                return False
+        return True
+    except FileNotFoundError:
+        return False
+
 def verificar_e_ajustar_resolucao():
     try:
         with mss.mss() as sct:
@@ -96,31 +107,30 @@ def verificar_e_ajustar_resolucao():
         sys.exit()
 
 def verificar_e_instalar_ahk():
-    try:
-        winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\AutoHotkey")
+    if verificar_associacao_ahk():
         return True
-    except FileNotFoundError:
-        root = tk.Tk()
-        root.withdraw()
-        
-        install_script = """
+
+    root = tk.Tk()
+    root.withdraw()
+    
+    install_script = """
         $tempPath = Join-Path $env:TEMP 'ahk-install.exe';
         Start-BitsTransfer -Source 'https://www.autohotkey.com/download/ahk-install.exe' -Destination $tempPath;
         Start-Process $tempPath -ArgumentList '/S' -Wait;
         Remove-Item $tempPath -ErrorAction SilentlyContinue;
         """
 
-        encoded_script = base64.b64encode(install_script.encode('utf_16_le')).decode()
-        
-        elevating_command = f'powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \'-NoProfile -EncodedCommand {encoded_script}\'"'
-        
-        try:
-            subprocess.run(elevating_command, shell=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
-            messagebox.showinfo("Instalação Concluída", "AutoHotkey foi instalado com sucesso. Por favor, reinicie a aplicação.")
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            messagebox.showerror("Erro na Instalação", "Não foi possível instalar o AutoHotkey. Tente executar o Forge como administrador.")
-        finally:
-            sys.exit()
+    encoded_script = base64.b64encode(install_script.encode('utf_16_le')).decode()
+    
+    elevating_command = f'powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \'-NoProfile -WindowStyle Hidden -EncodedCommand {encoded_script}\'"'
+    
+    try:
+        subprocess.run(elevating_command, shell=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        messagebox.showinfo("Instalação Concluída", "AutoHotkey foi instalado com sucesso. Por favor, reinicie a aplicação.")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        messagebox.showerror("Erro na Instalação", "Não foi possível instalar o AutoHotkey. Tente executar o Forge como administrador.")
+    finally:
+        sys.exit()
 
 # --- Rotas ---
 @app.route('/')
@@ -129,6 +139,15 @@ def index():
 
 @app.route('/comando/<string:nome_comando>')
 def executar_comando(nome_comando):
+    if not verificar_associacao_ahk():
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror(
+            "AutoHotkey Desinstalado",
+            "O AutoHotkey não foi encontrado. Por favor, reinicie a aplicação para reinstalá-lo."
+        )
+        return "Erro: AHK não encontrado", 500
+    
     if getattr(sys, 'frozen', False):
         diretorio_base = sys._MEIPASS
     else:
