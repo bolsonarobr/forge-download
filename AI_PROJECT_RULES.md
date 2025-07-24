@@ -40,7 +40,7 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
 - Validação: Verificar dados de entrada
 
 #### FRONTEND (Kotlin/Compose)
-- Componentes: Usar `TouchButton` para todos os botões
+- Componentes: Usar `TouchButton` para todos os botões, garantindo a animação "squeezy" padronizada.
 - Estados: Usar `rememberSaveable` para persistência
 - Coroutines: Usar `scope.launch` para operações assíncronas
 - Cores: Usar constantes de `Color.kt`
