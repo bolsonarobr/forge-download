@@ -20,6 +20,9 @@ import com.tiago.forgeapp.ui.theme.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,10 +32,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 
 @Composable
@@ -64,13 +66,15 @@ fun MainScreen() {
                 text = "BOT",
                 color = BlueButton,
                 onClick = { selectedContent = "BOT" },
-                enabled = isServerAvailable
+                enabled = isServerAvailable,
+                modifier = Modifier.width(100.dp).height(55.dp)
             )
             TouchButton(
                 text = "CONTAS",
                 color = OrangeButton,
                 onClick = { selectedContent = "CONTAS" },
-                enabled = isServerAvailable
+                enabled = isServerAvailable,
+                modifier = Modifier.width(100.dp).height(55.dp)
             )
         }
 
@@ -128,7 +132,9 @@ fun AccountsContent(networkService: NetworkService) {
                 )
             },
             confirmButton = {
-                Button(
+                TouchButton(
+                    text = "Adicionar",
+                    color = GreenButton,
                     onClick = {
                         if (newAccountName.isNotBlank()) {
                             scope.launch {
@@ -139,15 +145,17 @@ fun AccountsContent(networkService: NetworkService) {
                                 newAccountName = ""
                             }
                         }
-                    }
-                ) {
-                    Text("Adicionar")
-                }
+                    },
+                    modifier = Modifier.width(110.dp).height(45.dp)
+                )
             },
             dismissButton = {
-                Button(onClick = { showAddDialog = false }) {
-                    Text("Cancelar")
-                }
+                TouchButton(
+                    text = "Cancelar",
+                    color = RedButton,
+                    onClick = { showAddDialog = false },
+                    modifier = Modifier.width(110.dp).height(45.dp)
+                )
             }
         )
     }
@@ -158,21 +166,31 @@ fun AccountsContent(networkService: NetworkService) {
             title = { Text("Opções para ${selectedAccount!!.nome}") },
             text = { Text("Deseja renomear ou excluir esta conta?") },
             confirmButton = {
-                Button(onClick = {
-                    showOptionsDialog = false
-                    renameAccountName = selectedAccount!!.nome
-                    showRenameDialog = true
-                }) { Text("Renomear") }
+                TouchButton(
+                    text = "Renomear",
+                    color = BlueButton,
+                    onClick = {
+                        showOptionsDialog = false
+                        renameAccountName = selectedAccount!!.nome
+                        showRenameDialog = true
+                    },
+                    modifier = Modifier.width(110.dp).height(45.dp)
+                )
             },
             dismissButton = {
-                Button(onClick = {
-                    scope.launch {
-                        if (networkService.deleteAccount(selectedAccount!!.nome)) {
-                            refreshAccounts()
+                TouchButton(
+                    text = "Excluir",
+                    color = RedButton,
+                    onClick = {
+                        scope.launch {
+                            if (networkService.deleteAccount(selectedAccount!!.nome)) {
+                                refreshAccounts()
+                            }
+                            showOptionsDialog = false
                         }
-                        showOptionsDialog = false
-                    }
-                }) { Text("Excluir") }
+                    },
+                    modifier = Modifier.width(110.dp).height(45.dp)
+                )
             }
         )
     }
@@ -190,17 +208,27 @@ fun AccountsContent(networkService: NetworkService) {
                 )
             },
             confirmButton = {
-                Button(onClick = {
-                    scope.launch {
-                        if (networkService.renameAccount(selectedAccount!!.nome, renameAccountName)) {
-                            refreshAccounts()
+                TouchButton(
+                    text = "Confirmar",
+                    color = GreenButton,
+                    onClick = {
+                        scope.launch {
+                            if (networkService.renameAccount(selectedAccount!!.nome, renameAccountName)) {
+                                refreshAccounts()
+                            }
+                            showRenameDialog = false
                         }
-                        showRenameDialog = false
-                    }
-                }) { Text("Confirmar") }
+                    },
+                    modifier = Modifier.width(110.dp).height(45.dp)
+                )
             },
             dismissButton = {
-                Button(onClick = { showRenameDialog = false }) { Text("Cancelar") }
+                TouchButton(
+                    text = "Cancelar",
+                    color = RedButton,
+                    onClick = { showRenameDialog = false },
+                    modifier = Modifier.width(110.dp).height(45.dp)
+                )
             }
         )
     }
@@ -222,13 +250,15 @@ fun AccountsContent(networkService: NetworkService) {
                     onLongClick = {
                         selectedAccount = account
                         showOptionsDialog = true
-                    }
+                    },
+                    modifier = Modifier.width(100.dp).height(55.dp)
                 )
             }
             TouchButton(
                 text = "Adicionar",
                 color = GreenButton,
-                onClick = { showAddDialog = true }
+                onClick = { showAddDialog = true },
+                modifier = Modifier.width(100.dp).height(55.dp)
             )
         }
     }
@@ -248,19 +278,22 @@ fun BotContent(networkService: NetworkService) {
             TouchButton(
                 text = "Ligar", 
                 color = GreenButton, 
-                onClick = { scope.launch { networkService.sendCommand("ligarBOT") } }
+                onClick = { scope.launch { networkService.sendCommand("ligarBOT") } },
+                modifier = Modifier.width(100.dp).height(55.dp)
             )
             TouchButton(
                 text = "Desligar", 
                 color = RedButton, 
-                onClick = { scope.launch { networkService.sendCommand("desligarBOT") } }
+                onClick = { scope.launch { networkService.sendCommand("desligarBOT") } },
+                modifier = Modifier.width(100.dp).height(55.dp)
             )
         }
         FlowRow {
             TouchButton(
                 text = "Ajustar Janelas", 
                 color = BlueButton, 
-                onClick = { scope.launch { networkService.sendCommand("ajustarjanelas") } }
+                onClick = { scope.launch { networkService.sendCommand("ajustarjanelas") } },
+                modifier = Modifier.width(216.dp).height(55.dp)
             )
         }
     }
@@ -278,22 +311,39 @@ fun TouchButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val topColor = if (isPressed) color.copy(alpha = 0.7f) else color
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.9f else 1f,
+        animationSpec = spring(
+            dampingRatio = 0.4f,
+            stiffness = 500f
+        ),
+        label = "SqueezyAnimation"
+    )
+
+    val topColor = color
     val bottomColor = if (isPressed) color else color.copy(alpha = 0.7f)
 
     Box(
-        modifier = modifier
-            .width(100.dp)
-            .height(55.dp)
+        modifier = modifier.scale(scale)
             .clip(RoundedCornerShape(6.dp))
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(topColor, bottomColor)
                 )
             )
-            .clickable(enabled = false) {}
             .pointerInput(enabled, onLongClick) {
                 detectTapGestures(
+                    onPress = {
+                        if (enabled) {
+                            val press = PressInteraction.Press(it)
+                            interactionSource.emit(press)
+                            try {
+                                awaitRelease()
+                            } finally {
+                                interactionSource.emit(PressInteraction.Release(press))
+                            }
+                        }
+                    },
                     onTap = { if (enabled) onClick() },
                     onLongPress = { if (enabled) onLongClick?.invoke() }
                 )
