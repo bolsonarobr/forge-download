@@ -1,4 +1,5 @@
 #NoEnv
+#SingleInstance, Off
 SetWorkingDir, %A_ScriptDir%
 SendMode Input
 
@@ -7,6 +8,16 @@ CoordMode, Mouse, Screen
 SetMouseDelay, -1
 
 argumento := A_Args[1]
+
+; Executor de clique para o modo espelho
+if (SubStr(argumento, 1, 8) = "click_em") {
+    partes := StrSplit(argumento, ":")
+    coords := StrSplit(partes[2], ",")
+    x := coords[1]
+    y := coords[2]
+    Click, %x%, %y%
+    ExitApp
+}
 
 if (argumento = "ligar_monitorar") {
     run, "monitorar.ahk"
@@ -26,6 +37,10 @@ if (argumento = "depurar") {
     depurartudo()
 }
 
+if (argumento = "click_espelho") {
+    click_espelho()
+}
+
 if (argumento = "depurartudo") {
     WinMinimize, streamer
     Sleep, 1000
@@ -41,6 +56,10 @@ if (argumento = "depurartudo") {
     if (jogoinicial != "apertado"){
         depurartudo()
     }
+}
+
+if (argumento = "ajustar_janelas_extender") {
+    ajustar_janelas_extender()
 }
 
 if (argumento = "preparar") {
@@ -1643,3 +1662,49 @@ voltar() {
         Sleep, 50
     }
 }
+
+click_espelho() {
+    Hotkey, *LButton, HandleLeftClick_Ouvinte, On
+    Hotkey, *RButton, HandleRightClick_Ouvinte, On
+    Loop {
+        Sleep, 1000
+    }
+    return
+
+    HandleLeftClick_Ouvinte:
+    MouseGetPos, x, y
+    http := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+    url := "http://192.168.192.249:5001/api/clique_remoto?x=" . x . "&y=" . y
+    http.Open("GET", url, true)
+    http.Send()
+    return
+
+    HandleRightClick_Ouvinte:
+    ExitApp
+    return
+}
+
+ajustar_janelas_extender() {
+    CoordMode, Pixel, Window
+    CoordMode, Mouse, Window
+    WinGet, lista, list, ahk_exe chrome.exe
+    Loop, %lista%
+    {
+        janela := lista%A_Index%
+        WinActivate, ahk_id %janela%
+        WinWaitActive, ahk_id %janela%
+        Sleep, 200
+        WinGetPos, posX, posY, largura, altura, ahk_id %janela%
+        
+        ImageSearch, x, y, 0, 0, largura, altura, *10 ajustar_janela_extender1.png
+        if (ErrorLevel = 0) {
+            MouseClickDrag, Left, x, y, 72, 132
+        }
+        
+        ImageSearch, x2, y2, 0, 0, largura, altura, *10 ajustar_janela_extender2.png
+        if (ErrorLevel = 0) {
+            MouseClickDrag, Left, x2, y2, 44, 410
+        }
+    }
+}
+
