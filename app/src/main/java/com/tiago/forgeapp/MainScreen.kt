@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -288,12 +289,20 @@ fun BotContent(networkService: NetworkService) {
                 modifier = Modifier.width(100.dp).height(55.dp)
             )
         }
-        FlowRow {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             TouchButton(
-                text = "Ajustar Janelas", 
+                text = "Ajustar\nJanelas", 
                 color = BlueButton, 
                 onClick = { scope.launch { networkService.sendCommand("ajustarjanelas") } },
-                modifier = Modifier.width(216.dp).height(55.dp)
+                modifier = Modifier.width(100.dp).height(55.dp)
+            )
+            TouchButton(
+                text = "Ajustar Extender", 
+                color = BlueButton, 
+                onClick = { scope.launch { networkService.sendCommand("ajustar_janelas_extender") } },
+                modifier = Modifier.width(100.dp).height(55.dp)
             )
         }
     }
@@ -355,7 +364,9 @@ fun TouchButton(
             text = text,
             color = if (enabled) Color.White else Color.Gray,
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 2
         )
     }
 } 

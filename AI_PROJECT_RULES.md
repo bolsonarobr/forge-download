@@ -41,6 +41,7 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
 
 #### FRONTEND (Kotlin/Compose)
 - Componentes: Usar `TouchButton` para todos os botões, garantindo a animação "squeezy" padronizada.
+- Texto em botões: Usar quebra de linha `\n` para manter padrão visual consistente
 - Estados: Usar `rememberSaveable` para persistência
 - Coroutines: Usar `scope.launch` para operações assíncronas
 - Cores: Usar constantes de `Color.kt`
@@ -57,13 +58,13 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
   - **Ajuste de Resolução:** Detecção e sugestão de ajuste para a resolução de tela recomendada.
   - **Instância Única:** Garante que apenas uma instância do servidor seja executada.
   - **Validação de Atalho:** Confirma a existência do caminho do atalho (.lnk) ao adicionar conta.
-- Rotas da API:
-  - `GET /contas` - Listar contas
-  - `POST /contas` - Adicionar conta
-  - `POST /executar_conta` - Executar atalho
-  - `POST /renomear_conta` - Renomear conta
-  - `POST /excluir_conta` - Excluir conta
-  - `GET /comando/<nome>` - Comandos gerais
+  - Rotas da API:
+    - `GET /contas` - Listar contas
+    - `POST /contas` - Adicionar conta
+    - `POST /executar_conta` - Executar atalho
+    - `POST /renomear_conta` - Renomear conta
+    - `POST /excluir_conta` - Excluir conta
+    - `GET /comando/<nome>` - Comandos gerais (ligarBOT, desligarBOT, ajustarjanelas, ajustar_janelas_extender)
 
 #### FRONTEND (FORGE_APP/app/)
 - `MainScreen.kt` - Interface principal com menu esquerdo (BOT, CONTAS)
@@ -73,6 +74,7 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
   - Descoberta automática do servidor
   - Painel de contas com botões dinâmicos
   - Adição, renomeação e exclusão de contas
+  - Comandos BOT: Ligar, Desligar, Ajustar Janelas, Ajustar Extender
 
 ### PRÓXIMAS FUNCIONALIDADES PENDENTES
 1. Interface de configuração do servidor
