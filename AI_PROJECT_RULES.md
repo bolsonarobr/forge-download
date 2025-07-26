@@ -42,6 +42,7 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
 #### FRONTEND (Kotlin/Compose)
 - Componentes: Usar `TouchButton` para todos os botões, garantindo a animação "squeezy" padronizada.
 - Texto em botões: Usar quebra de linha `\n` para manter padrão visual consistente
+- Menu esquerdo: Botões BOT e CONTAS usam `GreyButton` para padronização visual
 - Estados: Usar `rememberSaveable` para persistência
 - Coroutines: Usar `scope.launch` para operações assíncronas
 - Cores: Usar constantes de `Color.kt`
@@ -69,12 +70,13 @@ Objetivo: Painel de controle remoto para executar scripts AutoHotkey no PC
 #### FRONTEND (FORGE_APP/app/)
 - `MainScreen.kt` - Interface principal com menu esquerdo (BOT, CONTAS)
 - `NetworkService.kt` - Comunicação de rede com Ktor
-- `Color.kt` - Definições de cores
+- `Color.kt` - Definições de cores (BlueButton, GreenButton, RedButton, OrangeButton, PurpleButton, GreyButton)
 - Funcionalidades implementadas:
   - Descoberta automática do servidor
   - Painel de contas com botões dinâmicos
   - Adição, renomeação e exclusão de contas
   - Comandos BOT: Ligar, Desligar, Ajustar Janelas, Ajustar Extender
+  - Menu esquerdo padronizado com cor cinza
 
 ### PRÓXIMAS FUNCIONALIDADES PENDENTES
 1. Interface de configuração do servidor

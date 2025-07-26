@@ -65,14 +65,14 @@ fun MainScreen() {
         ) {
             TouchButton(
                 text = "BOT",
-                color = BlueButton,
+                color = GreyButton,
                 onClick = { selectedContent = "BOT" },
                 enabled = isServerAvailable,
                 modifier = Modifier.width(100.dp).height(55.dp)
             )
             TouchButton(
                 text = "CONTAS",
-                color = OrangeButton,
+                color = GreyButton,
                 onClick = { selectedContent = "CONTAS" },
                 enabled = isServerAvailable,
                 modifier = Modifier.width(100.dp).height(55.dp)
