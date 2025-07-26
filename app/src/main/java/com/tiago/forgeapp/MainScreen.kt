@@ -299,7 +299,7 @@ fun BotContent(networkService: NetworkService) {
                 modifier = Modifier.width(100.dp).height(55.dp)
             )
             TouchButton(
-                text = "Ajustar Extender", 
+                text = "Ajustar\nExtender", 
                 color = BlueButton, 
                 onClick = { scope.launch { networkService.sendCommand("ajustar_janelas_extender") } },
                 modifier = Modifier.width(100.dp).height(55.dp)

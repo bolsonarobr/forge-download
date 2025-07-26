@@ -58,10 +58,6 @@ if (argumento = "depurartudo") {
     }
 }
 
-if (argumento = "ajustar_janelas_extender") {
-    ajustar_janelas_extender()
-}
-
 if (argumento = "preparar") {
     preparar()
 }
@@ -438,6 +434,9 @@ if (argumento = "maximinizar") {
 }
 if (argumento = "ajustarjanelas") {
     ajustarjanelas()
+}
+if (argumento = "ajustar_janelas_extender") {
+    ajustar_janelas_extender()
 }
 if (argumento = "quatro_janelas") {
     quatro_janelas()
