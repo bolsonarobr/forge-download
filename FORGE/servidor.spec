@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['FORGE\\servidor.py'],
+    ['servidor.py'],
     pathex=[],
     binaries=[],
-    datas=[('FORGE/ahk', 'ahk')],
+    datas=[('ahk', 'ahk')],
     hiddenimports=['zeroconf._utils.ipaddress', 'zeroconf._handlers.answers', 'mss', 'win32api', 'win32con', 'pywintypes'],
     hookspath=[],
     hooksconfig={},
@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='FORGE\\imagem\\imagem_app.ico'
+    icon='imagem\\imagem_app.ico'
 )
