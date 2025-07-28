@@ -595,7 +595,7 @@ if (argumento = "depEXP") {
         MouseClick, Left, a, b
         Sleep, 100
         WinMaximize, A
-        Sleep, 2000
+        Sleep, 1000
         ; se tiver recompensas
         ImageSearch, a, b, 15, 91, 2546, 1390, *10 EXP_recompensas1.png
         if (ErrorLevel = 0){
@@ -628,7 +628,9 @@ if (argumento = "depEXP") {
             MouseClick, Left, 1500, 786
             MouseClick, Left, 1500, 860
             MouseClick, Left, 1500, 932
-            Sleep, 250
+            Sleep, 1000
+            MouseClick, Left, 1588, 528 
+            Sleep, 500
             WinRestore, A
             Sleep, 500
             goto, faseconcluidaEXP
