@@ -41,6 +41,10 @@ if (argumento = "click_espelho") {
     click_espelho()
 }
 
+if (argumento = "gastar") {
+    gastar()
+}
+
 if (argumento = "depurartudo") {
     WinMinimize, streamer
     Sleep, 1000
@@ -1707,3 +1711,47 @@ ajustar_janelas_extender() {
     }
 }
 
+gastar() {
+    ; analisar se esta na secao membros da guilda
+    Random, rx, 0, 6
+    Random, ry, 0, 6
+    ImageSearch, gastarX, gastarY, 0, 0, 2560, 1440, *10 gastar1.png
+    if (ErrorLevel = 0) {
+        MouseClick, Left, gastarX + 10 + rx, gastarY + 10 + ry
+        Sleep, 150
+    }
+    ; analisa GEs da secao guilda
+    coords := [[556,629,612,681],[1837,630,1893,681],[559,1329,614,1378],[1837,1323,1905,1377]]
+    for index, c in coords {
+        Random, rx, 0, 6
+        Random, ry, 0, 6
+        ImageSearch, gastarX, gastarY, c[1], c[2], c[3], c[4], *10 gastar2.png
+        if (ErrorLevel = 0) {
+            MouseClick, Left, gastarX + 10 + rx, gastarY + 10 + ry
+            Sleep, 150
+        }
+    }
+    ; clica nos primeiro GE
+    Loop {
+        Random, rx, 0, 6
+        Random, ry, 0, 6
+        ImageSearch, gastarX, gastarY, 0, 0, 2560, 1440, *10 gastar3.png
+        if (ErrorLevel = 0) {
+            MouseClick, Left, gastarX + 300 + rx, gastarY + 65 + ry
+            Sleep, 150
+        } else {
+            break
+        }
+    }
+    ; gasta os PFs
+    coords2 := [[585,170,691,228],[1880,178,1957,229],[591,867,685,926],[1876,868,1965,927]]
+    for index, c in coords2 {
+        Random, rx, 0, 6
+        Random, ry, 0, 6
+        ImageSearch, gastarX, gastarY, c[1], c[2], c[3], c[4], *10 gastar4.png
+        if (ErrorLevel = 0) {
+            MouseClick, Left, gastarX + 310 + rx, gastarY + 110 + ry
+            Sleep, 150
+        }
+    }
+}
