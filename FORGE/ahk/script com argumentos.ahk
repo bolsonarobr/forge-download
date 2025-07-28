@@ -1717,12 +1717,16 @@ ajustar_janelas_extender() {
 
 gastar() {
     ; analisar se esta na secao membros da guilda
+    Loop, 4 {
     Random, rx, 0, 6
     Random, ry, 0, 6
     ImageSearch, gastarX, gastarY, 0, 0, 2560, 1440, *10 gastar1.png
     if (ErrorLevel = 0) {
-        MouseClick, Left, gastarX + 10 + rx, gastarY + 10 + ry
-        Sleep, 150
+            MouseClick, Left, gastarX + rx, gastarY + ry
+            Sleep, 350
+        } else {
+            break
+        }
     }
     ; analisa GEs da secao guilda
     coords := [[556,629,612,681],[1837,630,1893,681],[559,1329,614,1378],[1837,1323,1905,1377]]
@@ -1732,17 +1736,17 @@ gastar() {
         ImageSearch, gastarX, gastarY, c[1], c[2], c[3], c[4], *10 gastar2.png
         if (ErrorLevel = 0) {
             MouseClick, Left, gastarX + 10 + rx, gastarY + 10 + ry
-            Sleep, 150
+            Sleep, 350
         }
     }
     ; clica nos primeiro GE
-    Loop {
+    Loop, 4 {
         Random, rx, 0, 6
         Random, ry, 0, 6
         ImageSearch, gastarX, gastarY, 0, 0, 2560, 1440, *10 gastar3.png
         if (ErrorLevel = 0) {
             MouseClick, Left, gastarX + 300 + rx, gastarY + 65 + ry
-            Sleep, 150
+            Sleep, 350
         } else {
             break
         }
@@ -1755,20 +1759,20 @@ gastar() {
         ImageSearch, gastarX, gastarY, c[1], c[2], c[3], c[4], *10 gastar4.png
         if (ErrorLevel = 0) {
             MouseClick, Left, gastarX + 310 + rx, gastarY + 110 + ry
-            Sleep, 150
+            Sleep, 350
         }
     }
 }
 
 coletar() {
     ; coletar cidade com diamante
-    Loop {
+    Loop, 4 {
         Random, rx, 0, 6
         Random, ry, 0, 6
         ImageSearch, coletarX, coletarY, 0, 0, 2560, 1440, *10 coletar.png
         if (ErrorLevel = 0) {
             MouseClick, Left, coletarX + 10 + rx, coletarY + 10 + ry
-            Sleep, 150
+            Sleep, 350
         } else {
             break
         }
