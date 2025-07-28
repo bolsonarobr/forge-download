@@ -45,6 +45,10 @@ if (argumento = "gastar") {
     gastar()
 }
 
+if (argumento = "coletar") {
+    coletar()
+}
+
 if (argumento = "depurartudo") {
     WinMinimize, streamer
     Sleep, 1000
@@ -1752,6 +1756,21 @@ gastar() {
         if (ErrorLevel = 0) {
             MouseClick, Left, gastarX + 310 + rx, gastarY + 110 + ry
             Sleep, 150
+        }
+    }
+}
+
+coletar() {
+    ; coletar cidade com diamante
+    Loop {
+        Random, rx, 0, 6
+        Random, ry, 0, 6
+        ImageSearch, coletarX, coletarY, 0, 0, 2560, 1440, *10 coletar.png
+        if (ErrorLevel = 0) {
+            MouseClick, Left, coletarX + 10 + rx, coletarY + 10 + ry
+            Sleep, 150
+        } else {
+            break
         }
     }
 }
