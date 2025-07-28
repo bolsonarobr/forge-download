@@ -17,11 +17,14 @@ import win32api
 import win32con
 import pywintypes
 import json
+from PIL import Image, ImageTk
+from io import BytesIO
 
 # CONFIGURAÇÕES FIXAS
 SERVER_PORT = 8080
 LOCK_PORT = 19988
 URL_VALIDACAO = "https://script.google.com/macros/s/AKfycbwDzLihI6zg9M3t17Sdg0YcZYLhXAeHPEEuBrlTzpGMtCb73JJTnZkBQwgCQ2JA_sH4/exec"
+QR_CODE_URL = "https://drive.google.com/uc?export=view&id=1M_QdzynqPLyKyDBkgY5StJoqlCBn-zMU"
 
 if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
@@ -153,6 +156,17 @@ def verificar_e_instalar_ahk():
         messagebox.showerror("Erro na Instalação", "Não foi possível instalar o AutoHotkey. Tente executar o Forge como administrador.")
     finally:
         sys.exit()
+
+def carregar_qr_code():
+    try:
+        resposta = requests.get(QR_CODE_URL, timeout=10)
+        if resposta.status_code == 200:
+            imagem = Image.open(BytesIO(resposta.content))
+            imagem = imagem.resize((150, 150), Image.Resampling.LANCZOS)
+            return ImageTk.PhotoImage(imagem)
+    except:
+        pass
+    return None
 
 # LINKS E COMANDOS DO SERVIDOR
 @app.route('/')
@@ -354,7 +368,7 @@ class ForgeApp:
     def _create_gui(self):
         self.root = tk.Tk()
         self.root.title("FORGE")
-        self.root.geometry("200x80")
+        self.root.geometry("200x250")
         self.root.resizable(False, False)
         self.root.configure(bg="#2E2E2E")
 
@@ -365,7 +379,17 @@ class ForgeApp:
             fg="#00FF00",
             bg="#2E2E2E"
         )
-        label.pack(pady=15, fill="both", expand=True)
+        label.pack(pady=10)
+
+        qr_image = carregar_qr_code()
+        if qr_image:
+            qr_label = tk.Label(
+                self.root,
+                image=qr_image,
+                bg="#2E2E2E"
+            )
+            qr_label.image = qr_image
+            qr_label.pack(pady=5)
         
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
